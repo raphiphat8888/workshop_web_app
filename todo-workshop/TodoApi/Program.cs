@@ -27,9 +27,6 @@ var todos = new List<TodoGetDto>
 app.MapGet("/api/todos", () =>
     Results.Ok(todos));
 
-
-
-
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
