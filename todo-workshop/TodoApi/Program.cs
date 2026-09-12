@@ -18,14 +18,15 @@ app.UseHttpsRedirection();
 
 var todos = new List<TodoGetDto>
 {
-    new(1, "Learn C#", false),
-    new(2, "Learn ASP.NET Core", false),
-    new(3,"build s web API",false),
-    new(4,"luv bby krub",false)
+    new(1, "Learn Minimal API", false),
+    new(2, "Learn Vue", false)
 };
+
+app.MapGet("/", () => "Hello Todo API");
 
 app.MapGet("/api/todos", () =>
     Results.Ok(todos));
+
 
 app.Run();
 
