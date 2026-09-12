@@ -20,6 +20,7 @@ var todos = new List<TodoGetDto>
 {
     new(1, "Learn Minimal API", false),
     new(2, "Learn Vue", false)
+    
 };
 
 app.MapGet("/", () => "Hello Todo API");
