@@ -37,6 +37,26 @@ app.MapGet("/api/todos/{id}", (int id) =>
         : Results.Ok(todo);
 });
 
+app.MapPut("/api/todos/{id}", (int id, TodoPutDto request) =>
+{
+    try
+    {
+        var todoIndex = todos.FindIndex(x => x.Id == id);
+
+        if (todoIndex == -1)
+        {
+            return Results.NotFound();
+        }
+
+        todos[todoIndex] = new TodoGetDto(id, request.Title, request.IsCompleted);
+
+        return Results.Ok(todos[todoIndex]);
+    }
+    catch
+    {
+        return Results.Problem("Unable to update the todo item.");
+    }
+});
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
