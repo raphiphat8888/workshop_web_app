@@ -109,6 +109,8 @@ todoGroup.MapGet("/", async (AppdbContext db) =>
     try
     {
         var todos = await db.TodoItems.ToListAsync();
+        var todoGetDto = todos.Select(t =>     
+        new TodoGetDto(t.Id, t.Title, t.IsComplete));
         return todos.Count == 0 ? Results.NotFound() : Results.Ok(todos);
     }
     catch
