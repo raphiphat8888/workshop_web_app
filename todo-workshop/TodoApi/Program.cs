@@ -10,18 +10,17 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+var todoGroup = app.MapGroup("/api/todos").WithTags("Todos");
 var todos = new List<TodoGetDto>
 {
     new(1, "Learn Minimal API", false),
     new(2, "Learn Vue", false)
 };
 
-app.MapGet("/", () => "Hello Todo API");
-
-app.MapGet("/api/todos", () =>
+todoGroup.MapGet("/", () =>
     Results.Ok(todos));
 
-app.MapGet("/api/todos/{id}", (int id) =>
+todoGroup.MapGet("/{id}", (int id) =>
 {
     var todo = todos.FirstOrDefault(todo => todo.Id == id);
 
@@ -30,7 +29,7 @@ app.MapGet("/api/todos/{id}", (int id) =>
         : Results.Ok(todo);
 });
 
-app.MapPost("/api/todos", (TodoPostDto request) =>
+todoGroup.MapPost("/", (TodoPostDto request) =>
 {
     var nextId = todos.Count == 0 ? 1 : todos.Max(todo => todo.Id) + 1;
     var todo = new TodoGetDto(nextId, request.Title, request.IsCompleted);
@@ -40,7 +39,7 @@ app.MapPost("/api/todos", (TodoPostDto request) =>
     return Results.Created($"/api/todos/{todo.Id}", todo);
 });
 
-app.MapPut("/api/todos/{id}", (int id, TodoPutDto request) =>
+todoGroup.MapPut("/{id}", (int id, TodoPutDto request) =>
 {
     try
     {
@@ -58,6 +57,27 @@ app.MapPut("/api/todos/{id}", (int id, TodoPutDto request) =>
     catch
     {
         return Results.Problem("Unable to update the todo item.");
+    }
+});
+
+todoGroup.MapDelete("/{id}", (int id) =>
+{
+    try
+    {
+        var todo = todos.FirstOrDefault(todo => todo.Id == id);
+
+        if (todo is null)
+        {
+            return Results.NotFound();
+        }
+
+        todos.Remove(todo);
+
+        return Results.NoContent();
+    }
+    catch
+    {
+        return Results.Problem("Unable to delete the todo item.");
     }
 });
 
