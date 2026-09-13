@@ -104,28 +104,42 @@ var todoGroup = app.MapGroup("/api/todos").WithTags("Todos");
 
 #region Database Enpoints
     
-todoGroup.MapGet("/",async (AppdbContext db) =>
+todoGroup.MapGet("/", async (AppdbContext db) =>
 {
-    var todos = await db.TodoItems.ToListAsync();
-    return todos.Count == 0 ? Results.NotFound() : Results.Ok(todos);
+    try
+    {
+        var todos = await db.TodoItems.ToListAsync();
+        return todos.Count == 0 ? Results.NotFound() : Results.Ok(todos);
+    }
+    catch
+    {
+        return Results.Problem("Unable to retrieve todo items.");
+    }
 
 });
 
 todoGroup.MapPost("/", async (AppdbContext db, TodoPostDto dto) =>
 {
-    var todo = new TodoItem
+    try
     {
-        Title = dto.Title,
-        IsComplete = dto.IsCompleted,
-        CreatedAt = DateTime.UtcNow
-    };
+        var todo = new TodoItem
+        {
+            Title = dto.Title,
+            IsComplete = dto.IsCompleted,
+            CreatedAt = DateTime.UtcNow
+        };
 
-    db.TodoItems.Add(todo);
-    await db.SaveChangesAsync();
+        db.TodoItems.Add(todo);
+        await db.SaveChangesAsync();
 
-    var todoGetDto = new TodoGetDto(todo.Id, todo.Title, todo.IsComplete);
+        var todoGetDto = new TodoGetDto(todo.Id, todo.Title, todo.IsComplete);
 
-    return Results.Created($"/api/todos/{todo.Id}", todoGetDto);
+        return Results.Created($"/api/todos/{todo.Id}", todoGetDto);
+    }
+    catch
+    {
+        return Results.Problem("Unable to create the todo item.");
+    }
 });
     
 #endregion
