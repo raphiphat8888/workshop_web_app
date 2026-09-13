@@ -1,26 +1,19 @@
 using TodoApi.Dtos;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
 var todos = new List<TodoGetDto>
 {
     new(1, "Learn Minimal API", false),
     new(2, "Learn Vue", false)
-    
 };
 
 app.MapGet("/", () => "Hello Todo API");
@@ -30,18 +23,28 @@ app.MapGet("/api/todos", () =>
 
 app.MapGet("/api/todos/{id}", (int id) =>
 {
-    var todo = todos.FirstOrDefault(x => x.Id == id);
+    var todo = todos.FirstOrDefault(todo => todo.Id == id);
 
     return todo is null
         ? Results.NotFound()
         : Results.Ok(todo);
 });
 
+app.MapPost("/api/todos", (TodoPostDto request) =>
+{
+    var nextId = todos.Count == 0 ? 1 : todos.Max(todo => todo.Id) + 1;
+    var todo = new TodoGetDto(nextId, request.Title, request.IsCompleted);
+
+    todos.Add(todo);
+
+    return Results.Created($"/api/todos/{todo.Id}", todo);
+});
+
 app.MapPut("/api/todos/{id}", (int id, TodoPutDto request) =>
 {
     try
     {
-        var todoIndex = todos.FindIndex(x => x.Id == id);
+        var todoIndex = todos.FindIndex(todo => todo.Id == id);
 
         if (todoIndex == -1)
         {
@@ -57,9 +60,5 @@ app.MapPut("/api/todos/{id}", (int id, TodoPutDto request) =>
         return Results.Problem("Unable to update the todo item.");
     }
 });
-app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+app.Run();
